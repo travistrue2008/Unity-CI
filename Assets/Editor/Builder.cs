@@ -6,6 +6,13 @@ using System.IO;
 
 public class Builder
 {
+	private enum PlatformType
+	{
+		Android,
+		iOS
+	}
+
+
 	private enum BuildType
 	{
 		Demo,
@@ -15,6 +22,7 @@ public class Builder
 
 	#region Constants
 	public const string OutputPathRoot = "../Builds/";
+	public const string BundlePrefix = "com.pokergamesinteractive.";
 	#endregion
 
 
@@ -55,14 +63,6 @@ public class Builder
 
 	private static void PerformiOSBuild(BuildType buildType)
 	{
-		// define the demo preprocessor if it's a demo
-		if (buildType == BuildType.Demo)
-		{
-			EditorUserBuildSettings.development = true;
-			EditorUserBuildSettings.allowDebugging = true;
-			EditorUserBuildSettings.connectProfiler = true;
-		}
-		
 		// determine the output path, and remove it if it already exists
 		string outputPath = OutputPathRoot + "iOS/" + ProjectName + "_" + buildType.ToString() + "/";
 		if (Directory.Exists(outputPath))
@@ -74,24 +74,51 @@ public class Builder
 		BuildPipeline.BuildPlayer(ScenePaths, outputPath, BuildTarget.iOS, BuildOptions.None);
 	}
 
+	private static void PerformBuild(PlatformType platform, BuildType buildType)
+	{
+		var bundleSuffix = "_show";
+		
+		// define the demo preprocessor if it's a demo
+		if (buildType == BuildType.Demo)
+		{
+			EditorUserBuildSettings.development = true;
+			EditorUserBuildSettings.allowDebugging = true;
+			EditorUserBuildSettings.connectProfiler = true;
+			bundleSuffix = "_demo";
+		}
+		PlayerSettings.bundleIdentifier = BundlePrefix + bundleSuffix;
+
+		// build for the respective platform
+		switch (platform)
+		{
+		case PlatformType.Android:
+			PerformAndroidBuild(buildType);
+			break;
+
+		case PlatformType.iOS:
+			PerformiOSBuild(buildType);
+			break;
+		}
+	}
+
 	public static void PerformDemoAndroidBuild()
 	{
-		PerformAndroidBuild(BuildType.Demo);
+		PerformBuild(PlatformType.Android, BuildType.Demo);
 	}
 
 	public static void PerformShowAndroidBuild()
 	{
-		PerformAndroidBuild(BuildType.Show);
+		PerformBuild(PlatformType.Android, BuildType.Show);
 	}
 
 	public static void PerformDemoiOSBuild()
 	{
-		PerformiOSBuild(BuildType.Demo);
+		PerformBuild(PlatformType.iOS, BuildType.Demo);
 	}
 
 	public static void PerformShowiOSBuild()
 	{
-		PerformiOSBuild(BuildType.Show);
+		PerformBuild(PlatformType.iOS, BuildType.Show);
 	}
 	#endregion
 }
