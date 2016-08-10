@@ -8,8 +8,8 @@ public class Builder
 {
 	private enum PlatformType
 	{
-		Android,
-		iOS
+		Android = BuildTarget.Android,
+		iOS = BuildTarget.iOS
 	}
 
 
@@ -70,7 +70,6 @@ public class Builder
 
 		// create the new path, and begin the build
 		Directory.CreateDirectory(outputPath);
-		EditorUserBuildSettings.SwitchActiveBuildTarget(BuildTarget.iOS);
 		BuildPipeline.BuildPlayer(ScenePaths, outputPath, BuildTarget.iOS, BuildOptions.None);
 	}
 
@@ -79,6 +78,7 @@ public class Builder
 		var bundleSuffix = "_show";
 		
 		// define the demo preprocessor if it's a demo
+		EditorUserBuildSettings.SwitchActiveBuildTarget((BuildTarget)buildType);
 		if (buildType == BuildType.Demo)
 		{
 			EditorUserBuildSettings.development = true;
@@ -86,7 +86,7 @@ public class Builder
 			EditorUserBuildSettings.connectProfiler = true;
 			bundleSuffix = "_demo";
 		}
-		PlayerSettings.bundleIdentifier = BundlePrefix + bundleSuffix;
+		PlayerSettings.bundleIdentifier = BundlePrefix + ProjectName.ToLower() + bundleSuffix;
 
 		// build for the respective platform
 		switch (platform)
